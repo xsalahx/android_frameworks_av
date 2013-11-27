@@ -1051,10 +1051,6 @@ status_t OMXCodec::setVideoInputFormat(
     CHECK(success);
     CHECK(stride != 0);
 
-#ifdef QCOM_HARDWARE
-    ExtendedUtils::HFR::reCalculateHFRParams(meta, frameRate, bitRate);
-#endif
-
     OMX_VIDEO_CODINGTYPE compressionFormat = OMX_VIDEO_CodingUnused;
     if (!strcasecmp(MEDIA_MIMETYPE_VIDEO_AVC, mime)) {
         compressionFormat = OMX_VIDEO_CodingAVC;
@@ -1319,10 +1315,6 @@ status_t OMXCodec::setupH263EncoderParameters(const sp<MetaData>& meta) {
     h263type.nAllowedPictureTypes =
         OMX_VIDEO_PictureTypeI | OMX_VIDEO_PictureTypeP;
 
-#ifdef QCOM_HARDWARE
-    ExtendedUtils::HFR::reCalculateHFRParams(meta, frameRate, bitRate);
-#endif
-
     h263type.nPFrames = setPFramesSpacing(iFramesInterval, frameRate);
     if (h263type.nPFrames == 0) {
         h263type.nAllowedPictureTypes = OMX_VIDEO_PictureTypeI;
@@ -1373,10 +1365,6 @@ status_t OMXCodec::setupMPEG4EncoderParameters(const sp<MetaData>& meta) {
 
     mpeg4type.nAllowedPictureTypes =
         OMX_VIDEO_PictureTypeI | OMX_VIDEO_PictureTypeP;
-
-#ifdef QCOM_HARDWARE
-    ExtendedUtils::HFR::reCalculateHFRParams(meta, frameRate, bitRate);
-#endif
 
     mpeg4type.nPFrames = setPFramesSpacing(iFramesInterval, frameRate);
     if (mpeg4type.nPFrames == 0) {
@@ -1438,10 +1426,6 @@ status_t OMXCodec::setupAVCEncoderParameters(const sp<MetaData>& meta) {
     if (err != OK) return err;
     h264type.eProfile = static_cast<OMX_VIDEO_AVCPROFILETYPE>(profileLevel.mProfile);
     h264type.eLevel = static_cast<OMX_VIDEO_AVCLEVELTYPE>(profileLevel.mLevel);
-
-#ifdef QCOM_HARDWARE
-    ExtendedUtils::HFR::reCalculateHFRParams(meta, frameRate, bitRate);
-#endif
 
     // XXX
 #ifdef USE_TI_DUCATI_H264_PROFILE
