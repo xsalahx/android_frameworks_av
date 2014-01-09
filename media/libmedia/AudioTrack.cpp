@@ -2,8 +2,6 @@
 ** Copyright (c) 2012-2013, The Linux Foundation. All rights reserved.
 ** Not a Contribution.
 ** Copyright 2007, The Android Open Source Project
-** Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
-** Not a Contribution.
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -25,14 +23,10 @@
 #include <sys/resource.h>
 #include <audio_utils/primitives.h>
 #include <binder/IPCThreadState.h>
-#include <media/AudioParameter.h>
-#include <media/AudioSystem.h>
 #include <media/AudioTrack.h>
 #include <utils/Log.h>
 #include <private/media/AudioTrackShared.h>
 #include <media/IAudioFlinger.h>
-#include <cutils/properties.h>
-#include <system/audio.h>
 
 #define WAIT_PERIOD_MS                  10
 #define WAIT_STREAM_END_TIMEOUT_SEC     120
@@ -367,35 +361,7 @@ status_t AudioTrack::set(
             mFrameSizeAF = sizeof(uint8_t);
         }
     }
-#elif defined(QCOM_HARDWARE)
-    if ((streamType == AUDIO_STREAM_VOICE_CALL) &&
-        (channelCount == 1) &&
-        (sampleRate == 8000 || sampleRate == 16000)) {
-        String8 valueStr = AudioSystem::getParameters((audio_io_handle_t)0, String8("audio_mode"));
-        AudioParameter result = AudioParameter(valueStr);
-        int value, mode;
-        if (result.getInt(String8("audio_mode"),value) == NO_ERROR) {
-            mode = value;
-            if (mode == AUDIO_MODE_IN_COMMUNICATION) {
-                if (audio_is_linear_pcm(format)) {
-                    char propValue[PROPERTY_VALUE_MAX] = {0};
-                    property_get("use.voice.path.for.pcm.voip", propValue, "0");
-                    bool voipPcmSysPropEnabled = !strncmp("true", propValue, sizeof("true"));
-                    if (voipPcmSysPropEnabled) {
-                        flags = (audio_output_flags_t)(flags | AUDIO_OUTPUT_FLAG_VOIP_RX |
-                                                       AUDIO_OUTPUT_FLAG_DIRECT);
-                        ALOGD("Set VoIP and Direct output flags for PCM format");
-                    }
-                } else {
-                    flags = (audio_output_flags_t)(flags | AUDIO_OUTPUT_FLAG_VOIP_RX |
-                                                   AUDIO_OUTPUT_FLAG_DIRECT);
-                    ALOGD("Set VoIP and Direct output flags for Non-PCM formats");
-                }
-            }
-        }
-    }
-#endif
-
+#else
     if (audio_is_linear_pcm(format)) {
         mFrameSize = channelCount * audio_bytes_per_sample(format);
         mFrameSizeAF = channelCount * sizeof(int16_t);
@@ -403,6 +369,7 @@ status_t AudioTrack::set(
         mFrameSize = sizeof(uint8_t);
         mFrameSizeAF = sizeof(uint8_t);
     }
+#endif
 
     audio_io_handle_t output = AudioSystem::getOutput(
                                     streamType,
