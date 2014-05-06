@@ -213,6 +213,7 @@ void DataSource::RegisterDefaultSniffers() {
 #ifdef QCOM_HARDWARE
     RegisterSniffer_l(ExtendedExtractor::Sniff);
 #endif
+#endif
     RegisterSnifferPlugin();
 
     char value[PROPERTY_VALUE_MAX];
